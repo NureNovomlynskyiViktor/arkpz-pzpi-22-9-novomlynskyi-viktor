@@ -1,0 +1,123 @@
+ublic class CustomerAccount
+        {
+
+            
+
+
+            private string customerName;
+            private decimal accountBalance;
+
+            public decimal GetAccountBalance()
+            {
+                return accountBalance;
+            }
+        }
+        
+        // Неправильно
+        public class CA
+        {
+            private string custNm;
+            private decimal bal;
+            
+            public decimal GetBal()
+            {
+                return bal;
+            }
+        }
+        public int Add(int a, int b)
+        {
+            // Додає a і b
+            return a + b; // Повертає суму
+        }
+        public void ProcessPayment(decimal amount)
+        {
+            // Використовуємо округлення до двох десяткових, щоб уникнути проблем із копійками при розрахунках
+            amount = Math.Round(amount, 2);
+            // Решта логіки для обробки платежу
+        }
+        public class Calculator
+        {
+            /// <summary>
+            /// Обчислює факторіал числа.
+            /// </summary>
+            /// <param name="n">Число, для якого обчислюється факторіал</param>
+            /// <returns>Факторіал числа</returns>
+            public int Factorial(int n)
+            {
+                // Використання рекурсії для обчислення факторіала.
+                // Якщо n дорівнює 0, повертається 1, інакше обчислюється n * Factorial(n - 1)
+                return n == 0 ? 1 : n * Factorial(n - 1);
+            }
+        }
+
+
+        public class CalculatorSum
+        {
+            // Метод для додавання двох чисел
+            public int Add(int a, int b)
+            {
+                return a + b;  // Повертає суму двох чисел
+            }
+
+            // Метод для віднімання двох чисел
+            public int Subtract(int a, int b)
+            {
+                return a - b;  // Повертає різницю між двома числами
+            }
+        }
+        public class NumberChecker
+        {
+            // Перевірка на парність
+            public bool IsEven(int number)
+            {
+                return number % 2 == 0;
+            }
+
+            // Перевірка на додатність
+            public bool IsPositive(int number)
+            {
+                return number > 0;
+            }
+        }
+        public void PrintCustomerInfo(string name, string address, string phoneNumber)
+        {
+            Console.WriteLine($"Name: {name}");
+            Console.WriteLine($"Address: {address}");
+            Console.WriteLine($"Phone: {phoneNumber}");
+        }
+        /*public class Example { public void DoSomething  ( ){ int a = 5; int b = 10; int result = a + b; if ( result   > 10) { Console.WriteLine( " Result is greater than 10") ; } else { Console.WriteLine("Result is less or equal to 10"); }   } }*/
+        public class Example
+        {
+            // Метод для виконання операцій
+            public void DoSomething()
+            {
+                int a = 5;  // Ініціалізація змінних
+                int b = 10;
+                int result = a + b;  // Обчислення результату
+
+                if (result > 10)
+                {
+                    Console.WriteLine("Result is greater than 10");
+                }
+                else
+                {
+                    Console.WriteLine("Result is less or equal to 10");
+                }
+            }
+        }
+
+if (x > 0)
+{
+    Console.WriteLine("Positive number");
+}
+else
+{
+    Console.WriteLine("Negative number");
+}
+
+
+
+if (x > 0)
+{
+    Console.WriteLine("x is positive");
+}
