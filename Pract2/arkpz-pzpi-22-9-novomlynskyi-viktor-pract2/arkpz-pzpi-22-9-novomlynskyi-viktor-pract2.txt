@@ -1,0 +1,255 @@
+Replace temp with query
+
+До рефакторингу:
+
+public class Order
+{
+    public double Quantity { get; set; }
+    public double ItemPrice { get; set; }
+
+    public double GetTotalPrice()
+    {
+        double basePrice = Quantity * ItemPrice;
+        double discount = (basePrice > 1000) ? basePrice * 0.1 : 0;
+        double tax = basePrice * 0.05;
+
+        return basePrice - discount + tax;
+    }
+}
+
+Після рефакторингу:
+
+public class Order
+{
+    public double Quantity { get; set; }
+    public double ItemPrice { get; set; }
+
+    public double GetTotalPrice()
+    {
+        return GetBasePrice() - GetDiscount() + GetTax();
+    }
+
+    private double GetBasePrice()
+    {
+        return Quantity * ItemPrice;
+    }
+
+    private double GetDiscount()
+    {
+        return (GetBasePrice() > 1000) ? GetBasePrice() * 0.1 : 0;
+    }
+
+    private double GetTax()
+    {
+        return GetBasePrice() * 0.05;
+    }
+}
+
+Consolidate Conditional Expression
+
+Код до рефакторингу:
+
+public bool HasAccess(User user)
+{
+    if (user.IsAdmin)
+    {
+        return true;
+    }
+    if (user.Role == "Manager")
+    {
+        return true;
+    }
+    if (user.Department == "IT" && user.YearsOfExperience > 5)
+    {
+        return true;
+    }
+    return false;
+}
+
+public bool HasAccess(User user)
+{
+    return user.IsAdmin || 
+           user.Role == "Manager" || 
+           (user.Department == "IT" && user.YearsOfExperience > 5);
+}
+
+
+Код до рефакторингу:
+
+public List<Order> GetHighPriorityOrders(List<Order> orders)
+{
+    List<Order> result = new List<Order>();
+
+    foreach (var order in orders)
+    {
+        if (order.IsUrgent)
+        {
+            result.Add(order);
+        }
+        else if (order.TotalAmount > 10000)
+        {
+            result.Add(order);
+        }
+        else if (order.Customer.IsVIP)
+        {
+            result.Add(order);
+        }
+    }
+
+    return result;
+}
+
+Код після рефакторингу:
+
+public List<Order> GetHighPriorityOrders(List<Order> orders)
+{
+    return orders.Where(order => order.IsUrgent || 
+                                 order.TotalAmount > 10000 || 
+                                 order.Customer.IsVIP).ToList();
+}
+
+
+Remove Middle Man
+
+До рефакторингу:
+
+using System;
+using System.Collections.Generic;
+
+public class Customer
+{
+    public string Name { get; set; }
+    public string Address { get; set; }
+
+    public string GetAddress()
+    {
+        return Address;
+    }
+}
+
+public class Product
+{
+    public string Name { get; set; }
+    public double Price { get; set; }
+
+    public double GetPrice()
+    {
+        return Price;
+    }
+}
+
+public class Order
+{
+    public Customer Customer { get; set; }
+    public List<Product> Products { get; set; }
+    public DateTime OrderDate { get; set; }
+
+    public string GetCustomerAddress()
+    { 
+        return Customer.GetAddress();
+    }
+
+    public double GetTotalPrice()
+    {
+        double total = 0;
+        foreach (var product in Products)
+        {
+            total += product.GetPrice();
+        }
+        return total;
+    }
+
+    public void PrintOrderSummary()
+    {
+        Console.WriteLine($"Order Summary for {Customer.Name} (Order Date: {OrderDate})");
+        Console.WriteLine($"Shipping Address: {GetCustomerAddress()}");
+        Console.WriteLine("Products:");
+        foreach (var product in Products)
+        {
+            Console.WriteLine($"- {product.Name}: ${product.GetPrice()}");
+        }
+        Console.WriteLine($"Total Price: ${GetTotalPrice()}");
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        var customer = new Customer { Name = "John Doe", Address = "123 Main St" };
+        var product1 = new Product { Name = "Laptop", Price = 1200 };
+        var product2 = new Product { Name = "Phone", Price = 800 };
+
+        var order = new Order
+        {
+            Customer = customer,
+            Products = new List<Product> { product1, product2 },
+            OrderDate = DateTime.Now
+        };
+
+        order.PrintOrderSummary();
+    }
+}
+
+Після рефакторингу:
+
+using System;
+using System.Collections.Generic;
+
+public class Customer
+{
+    public string Name { get; set; }
+    public string Address { get; set; }
+}
+
+public class Product
+{
+    public string Name { get; set; }
+    public double Price { get; set; }
+}
+
+public class Order
+{
+    public Customer Customer { get; set; }
+    public List<Product> Products { get; set; }
+    public DateTime OrderDate { get; set; }
+
+    public void PrintOrderSummary()
+    {
+        Console.WriteLine($"Order Summary for {Customer.Name} (Order Date: {OrderDate})");
+        Console.WriteLine($"Shipping Address: {Customer.Address}"); // Прямий доступ до властивості
+        Console.WriteLine("Products:");
+
+        double totalPrice = 0;
+        foreach (var product in Products)
+        {
+            Console.WriteLine($"- {product.Name}: ${product.Price}"); // Прямий доступ до властивості
+            totalPrice += product.Price;
+        }
+        
+        Console.WriteLine($"Total Price: ${totalPrice}");
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        var customer = new Customer { Name = "John Doe", Address = "123 Main St" };
+        var product1 = new Product { Name = "Laptop", Price = 1200 };
+        var product2 = new Product { Name = "Phone", Price = 800 };
+
+        var order = new Order
+        {
+            Customer = customer,
+            Products = new List<Product> { product1, product2 },
+            OrderDate = DateTime.Now
+        };
+
+        order.PrintOrderSummary();
+    }
+}
+
+
+
+
