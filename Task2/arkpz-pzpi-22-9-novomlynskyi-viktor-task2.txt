@@ -1,0 +1,533 @@
+                     Міністерство освіти і науки України
+
+           Харківський національний університет радіоелектроніки
+
+
+
+
+                       Кафедра програмної інженерії
+
+
+
+
+                                    Звіт
+                         до лабораторної роботи №2
+                      з «Аналізу та рефакторингу коду»
+
+
+
+
+Виконав:                                                       Перевірив:
+ст. гр. ПЗПІ-22-9                                           ас. кафедри ПІ
+Новомлинський В.І.                                         Дашенков Д.С.
+
+
+
+
+                             Харків 2024
+           ЛАБОРАТОРНА РОБОТА №2. РОЗРОБКА БАЗИ ДАНИХ ДЛЯ
+   СЕРВЕРНОЇ ЧАСТИНИ ПРОГРАМНОЇ СИСТЕМИ ТА ПРИКЛАДНОГО
+                     ПРОГРАМНОГО ІНТЕРФЕЙСУ (API)
+
+
+     Мета: Розробити базу даних для серверної частини програмної системи та
+прикладного програмного інтерфейсу.
+
+
+     Завдання:
+     1. Розробити будову програмної системи.
+     2. Створити UML діаграму прецедентів для серверної частини системи.
+     3. Створити ER діаграму даних.
+     4. Розробити базу даних (БД) програмної системи.
+     5. Створити діаграму структури БД.
+     6. Розробити функції роботи з БД (ORM або CoRM тощо).
+     7. Розробити API (REST або GraphQL, gRPC тощо) для взаємодії серверної
+     частини з клієнтами.
+     8. Створити специфікацію розробленого API.
+     9. Створити програмну реалізацію розробленого API та функцій роботи з БД.
+     10.Перевірити роботу створеного програмного коду серверної частини
+системи.
+     11.Завантажити або оновити (при потребі) створений програмний код у
+GitHub репозиторій для лабораторних робіт у гілку репозиторію main.
+Хід роботи:
+
+
+Будова програмної системи:
+
+
+
+
+                Рисунок 1 - Будова програмної системи
+Розглянемо use-case діаграму:
+
+
+
+
+                  Рисунок 2 - Будова use-case діаграми
+Розглянемо ER діаграму даних:
+
+
+
+
+                   Рисунок 3 - ER діаграма проєкту
+Діаграма структуру БД:
+
+
+
+
+                        Рисунок 4 - Структура БД
+
+
+
+      Для реалізації проєкту ArtGuard була обрана база даних PostgreSQL через її
+потужний функціонал, стабільність і можливість працювати зі складними
+зв'язками між таблицями. В основі лежить ER-діаграма з сьомома сутностями:
+Users, Sensors, Museums, Exhibitions, Alerts.
+
+      Зв’язки між сутностями:
+   1. Музеї та Експонати (Museums and Exhibits):
+
+      Тип зв'язку: Один до багатьох (One to Many)
+
+      Опис: Один музей може містити багато експонатів. Кожен експонат
+      належить лише одному музею. Це дозволяє зберігати дані про всі експонати,
+      які проходять у кожному музеї, з можливістю розширення на майбутнє, якщо
+   музей буде мати нові експонати. Для зв'язку між музеєм і експонатом
+   використовується поле museum_id у таблиці exhibits, яке є зовнішнім ключем
+   на таблицю museums.
+
+2. Експонати та Сенсори (Exhibits and Sensors):
+
+● Тип зв'язку: Один до багатьох (One to Many)
+● Опис: Один експонат може мати багато сенсорів, що збирають інформацію
+   про умови на експонаті, такі як температура, вологість, вібрація тощо. Кожен
+   сенсор прив'язаний до певної виставки. Це дозволяє системі фіксувати дані з
+   різних сенсорів для кожної виставки. У таблиці sensors є поле exhibit_id, яке
+   є зовнішнім ключем на таблицю exhibits.
+
+3. Користувачі та Оповіщення (Users and Alerts):
+
+● Тип зв'язку: Один до багатьох (One to Many)
+● Опис: Один користувач може мати багато оповіщень, пов'язаних з різними
+   аспектами музею чи виставки, такими як зміни в експонатах, нові виставки,
+   або зміни в сенсорах. Кожне оповіщення є частиною діяльності користувача
+   в системі. Для зв'язку користувача і оповіщення в таблиці alerts є поле
+   user_id, яке є зовнішнім ключем на таблицю users.
+
+4. Експонати та Оповіщення (Exhibits and Alerts):
+
+● Тип зв'язку: Один до багатьох (One to Many)
+● Опис: Одна виставка може мати багато оповіщень, пов'язаних зі змінами в
+   експонатах або умовах на виставці, які відслідковуються через сенсори або
+   адміністративні повідомлення. Це дає можливість відслідковувати важливі
+   події для кожної виставки окремо. Для цього в таблиці alerts є поле
+   exhibit_id, яке є зовнішнім ключем на таблицю exhibits.
+  5. Користувачі та Ролі (Users and Roles):
+
+  ● Тип зв'язку: Багато до багатьох (Many to Many)
+  ● Опис: Користувачі можуть мати кілька ролей в системі, наприклад,
+     адміністратор, екскурсовод, відвідувач тощо. Ролі визначають, які права має
+     користувач на доступ до різних частин системи. Для цього необхідно
+     створити таблицю зв'язку між користувачами та ролями, яка зберігає
+     інформацію про те, які ролі належать кожному користувачу.
+
+  6. Покажчик на користувача у таблиці оповіщень (Users in Alerts):
+
+  ● Користувачі зв'язані з оповіщеннями через зовнішній ключ user_id у таблиці
+     alerts. Це означає, що кожне оповіщення є повідомленням, яке було створено
+     або призначене користувачеві, наприклад, адміністратору або працівнику.
+
+
+
+
+     Загальна схема зв'язків:
+
+     Museums ↔ Exhibits: Один до багатьох
+
+     Exhibits ↔ Sensors: Один до багатьох
+
+     Exhibits ↔ Alerts: Один до багатьох
+
+     Users ↔ Alerts: Один до багатьох
+
+     Users ↔ Roles: Багато до багатьох
+
+     Специфікація API
+
+Ось специфікація API для вашої системи в бажаному форматі:
+
+  1) Сторінка реєстрації/авторизації:
+● Реєстрація користувача (адміністратор/персонал): (POST) /register
+● Авторизація користувача: (POST) /login
+● Зміна даних користувача: (PUT) /user/change-info
+● Видалення користувача: (DELETE) /user/delete
+
+2) Управління музеями:
+
+● Додавання музею: (POST) /admin/add-museum
+● Отримання всіх музеїв: (GET) /admin/museums
+● Пошук музею за назвою: (GET) /admin/museums/find
+● Видалення музею: (DELETE) /admin/delete-museum
+
+3) Виставки в музеях:
+
+● Додавання виставки: (POST) /admin/add-exhibit
+● Редагування виставки: (PUT) /admin/exhibit/{id}
+● Отримання всіх виставок: (GET) /admin/exhibits
+● Отримання виставки за ID: (GET) /admin/exhibits/{id}
+● Видалення виставки: (DELETE) /admin/delete-exhibit
+
+
+
+4) Користувачі системи:
+
+● Отримання всіх користувачів: (GET) /admin/users
+● Отримання конкретного користувача: (GET) /user/{id}
+● Оновлення даних користувача: (PUT) /user/update-info
+● Видалення користувача: (DELETE) /user/delete
+
+5) Створення/редагування ролей:
+
+● Додавання нової ролі: (POST) /admin/add-role
+● Отримання всіх ролей: (GET) /admin/roles
+● Редагування ролі: (PUT) /admin/role/{id}
+● Видалення ролі: (DELETE) /admin/delete-role
+
+6) Управління предметами мистецтва:
+
+● Додавання предмета мистецтва: (POST) /admin/add-art-object
+● Отримання всіх предметів мистецтва: (GET) /admin/art-objects
+● Отримання предмета мистецтва за ID: (GET) /admin/art-objects/{id}
+● Редагування предмета мистецтва: (PUT) /admin/art-object/{id}
+● Видалення предмета мистецтва: (DELETE) /admin/delete-art-object
+
+7) Взаємодія з виставками для користувачів:
+
+● Запис на виставку: (POST) /user/register-exhibit
+● Отримання всіх записів користувача на виставки: (GET) /user/exhibits
+● Видалення запису на виставку: (DELETE) /user/delete-exhibit/{id}
+
+
+
+
+-
+                                    ДОДАТОК А
+
+                                    Код програми
+
+                                    Код main.go
+package main
+
+
+import (
+      "log"
+      "my_project/config"
+      "my_project/routes"
+      "github.com/gofiber/fiber/v2"
+)
+
+
+func main() {
+
+
+      db := config.InitDB()
+
+
+
+
+      app := fiber.New()
+
+
+
+
+      app.Use(func(c *fiber.Ctx) error {
+               c.Locals("db", db)
+               return c.Next()
+      })
+
+
+      routes.SetupRoutes(app)
+
+
+      log.Fatal(app.Listen(":3001"))
+}
+                                       Код db.go
+package config
+
+
+import (
+      "fmt"
+      "log"
+      "my_project/models"
+      "gorm.io/driver/postgres"
+      "gorm.io/gorm"
+)
+
+
+var DB *gorm.DB
+
+
+func InitDB() *gorm.DB {
+      dbUser := "postgres"
+      dbPass := "16072005!"
+      dbName := "artguard"
+      dbHost := "localhost"
+      dbPort := "5432"
+
+
+      // Створюємо рядок з'єднання для PostgreSQL
+      connectionString := fmt.Sprintf("host=%s user=%s dbname=%s password=%s port=%s
+sslmode=disable", dbHost, dbUser, dbName, dbPass, dbPort)
+
+
+      // Підключаємося до бази даних
+      var err error
+      DB, err = gorm.Open(postgres.Open(connectionString), &gorm.Config{})
+      if err != nil {
+              log.Fatal("Failed to connect to database:", err)
+      }
+
+
+      // Перевірка з'єднання
+      sqlDB, err := DB.DB()
+      if err != nil {
+              log.Fatal("Failed to get DB connection:", err)
+      }
+
+
+      // Перевірка з'єднання з базою даних
+      if err := sqlDB.Ping(); err != nil {
+            log.Fatal("Failed to ping database:", err)
+      } else {
+            log.Println("Successfully connected to the database.")
+      }
+
+
+      DB.AutoMigrate(&models.User{}, &models.Museum{}, &models.Exhibit{},
+&models.Alert{}, &models.Sensor{}, &models.Zone{})
+
+
+      return DB
+}
+
+
+                                 Код routes.go
+package routes
+
+
+import (
+      "my_project/controllers"
+      "github.com/gofiber/fiber/v2"
+)
+
+
+// SetupRoutes налаштовує маршрути для твого API
+func SetupRoutes(app *fiber.App) {
+      // Маршрути для користувачів
+      app.Post("/register", controllers.RegisterUser)
+      app.Post("/login", controllers.LoginUser)
+      app.Put("/users/:id", controllers.UpdateUser)
+      app.Delete("/admin/users/:id", controllers.DeleteUser)
+
+
+      // Маршрути для музейних об'єктів
+      app.Post("/museum", controllers.CreateMuseum)
+      app.Get("/museum", controllers.GetAllMuseums)
+      app.Get("/museum/:id", controllers.GetMuseumByID)
+      app.Put("/museum/:id", controllers.UpdateMuseum)
+      app.Delete("/museum/:id", controllers.DeleteMuseum)
+
+
+      // Маршрути для експонатів
+      app.Post("/exhibit", controllers.CreateExhibit)
+      app.Get("/exhibit", controllers.GetAllExhibits)
+      app.Get("/exhibit/:id", controllers.GetExhibitByID)
+      app.Put("/exhibit/:id", controllers.UpdateExhibit)
+      app.Delete("/exhibit/:id", controllers.DeleteExhibit)
+
+
+      // Маршрути для сенсорів
+      app.Post("/sensor", controllers.CreateSensor)
+      app.Get("/sensor", controllers.GetAllSensors)
+      app.Get("/sensor/:id", controllers.GetSensorByID)
+      app.Put("/sensor/:id", controllers.UpdateSensor)
+      app.Delete("/sensor/:id", controllers.DeleteSensor)
+
+
+      // Маршрути для зон
+      app.Post("/zone", controllers.CreateZone)
+      app.Get("/zone", controllers.GetAllZones)
+      app.Get("/zone/:id", controllers.GetZoneByID)
+      app.Put("/zone/:id", controllers.UpdateZone)
+      app.Delete("/zone/:id", controllers.DeleteZone)
+}
+
+
+                          User_controller.go
+package controllers
+
+
+import (
+      "log"
+      "my_project/models"
+      "github.com/gofiber/fiber/v2"
+      "golang.org/x/crypto/bcrypt"
+      "gorm.io/gorm"
+)
+
+
+// RegisterUser - реєстрація нового користувача
+func RegisterUser(c *fiber.Ctx) error {
+      db, ok := c.Locals("db").(*gorm.DB)
+      if !ok || db == nil {
+              log.Println("Database connection not found in context")
+              return
+c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Database
+connection error"})
+      }
+
+
+      var user models.User
+        if err := c.BodyParser(&user); err != nil {
+              log.Println("BodyParser error:", err)
+              return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message":
+"Invalid request data"})
+        }
+
+
+        // Перевіряємо, чи існує вже користувач з таким email
+        var existingUser models.User
+        if err := db.Where("email = ?", user.Email).First(&existingUser).Error; err ==
+nil {
+              log.Println("User with this email already exists")
+              return c.Status(fiber.StatusConflict).JSON(fiber.Map{"message": "User
+with this email already exists"})
+        }
+
+
+        // Хешуємо пароль перед збереженням
+        hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.PasswordHash),
+bcrypt.DefaultCost)
+        if err != nil {
+              log.Println("Password hashing error:", err)
+              return
+c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Error hashing
+password"})
+        }
+
+
+        user.PasswordHash = string(hashedPassword)
+        if err := db.Create(&user).Error; err != nil {
+              log.Println("Database save error:", err)
+              return
+c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Error saving
+user to database"})
+        }
+
+
+        return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "User registered
+successfully", "user": user})
+}
+
+
+// LoginUser - логін користувача
+func LoginUser(c *fiber.Ctx) error {
+        db, ok := c.Locals("db").(*gorm.DB)
+        if !ok || db == nil {
+               log.Println("Database connection not found in context")
+               return
+c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Database
+connection error"})
+        }
+
+
+        var user models.User
+        if err := c.BodyParser(&user); err != nil {
+               log.Println("BodyParser error:", err)
+               return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message":
+"Invalid request data"})
+        }
+
+
+        var existingUser models.User
+        if err := db.Where("email = ?", user.Email).First(&existingUser).Error; err !=
+nil {
+               log.Println("User not found:", err)
+               return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "User
+not found"})
+        }
+
+
+        // Перевірка пароля
+        err := bcrypt.CompareHashAndPassword([]byte(existingUser.PasswordHash),
+[]byte(user.PasswordHash))
+        if err != nil {
+               log.Println("Incorrect password:", err)
+               return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message":
+"Incorrect password"})
+        }
+
+
+        return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Login successful",
+"user": existingUser})
+}
+
+
+// UpdateUser - оновлення даних користувача
+func UpdateUser(c *fiber.Ctx) error {
+        db, ok := c.Locals("db").(*gorm.DB)
+        if !ok || db == nil {
+               log.Println("Database connection not found in context")
+               return
+c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Database
+connection error"})
+      }
+
+
+      var user models.User
+      if err := c.BodyParser(&user); err != nil {
+               log.Println("BodyParser error:", err)
+               return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message":
+"Invalid request data"})
+      }
+
+
+      userID := c.Params("id")
+      if err := db.Model(&models.User{}).Where("id = ?", userID).Updates(user).Error;
+err != nil {
+               log.Println("Database update error:", err)
+               return
+c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Error updating
+user"})
+      }
+
+
+      return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "User updated
+successfully"})
+}
+
+
+// DeleteUser - видалення користувача
+func DeleteUser(c *fiber.Ctx) error {
+      db, ok := c.Locals("db").(*gorm.DB)
+      if !ok || db == nil {
+               log.Println("Database connection not found in context")
+               return
+c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Database
+connection error"})
+      }
+
+
+      userID := c.Params("id")
+      if err := db.Delete(&models.User{}, userID).Error; err != nil {
+               log.Println("Database delete error:", err)
+            return
+c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Error deleting
+user"})
+      }
+
+
+      return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "User deleted
+successfully"})
+}
+
