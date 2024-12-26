@@ -1,0 +1,368 @@
+                     Міністерство освіти і науки України
+
+           Харківський національний університет радіоелектроніки
+
+
+
+
+                       Кафедра програмної інженерії
+
+
+
+
+                                    Звіт
+                         до лабораторної роботи №4
+                      з «Аналізу та рефакторингу коду»
+
+
+
+
+Виконав:                                                       Перевірив:
+ст. гр. ПЗПІ-22-9                                           ас. кафедри ПІ
+Новомлинський В.І.                                         Дашенков Д.С.
+
+
+
+
+                             Харків 2024
+               ЛАБОРАТОРНА РОБОТА №4. РОЗРОБКА IoT КЛІЄНТА
+                (БІЗНЕС-ЛОГІКИ ТА ФУНКЦІЙ НАЛАШТУВАННЯ)
+
+
+      Мета: На лабораторній роботі №4 потрібно розробити програмне
+забезпечення для IoT або SmartDevice пристрою, створеного на базі будь-якої
+поширеної на сьогодні платформи, придатної для реалізації вбудованих систем
+(Embedded System).
+
+
+      Завдання:
+      1. Розробити будову програмного забезпечення ІоТ клієнта.
+      2. Створити UML діаграму прецедентів для ІоТ клієнта.
+      3. Розробити бізнес логіку (математичну обробку повʼязаних із предметною
+областю даних) та функції налаштування ІоТ клієнта.
+      4. Створити діаграму діяльності для ІоТ клієнта.
+      5. Створити програмну реалізацію бізнес логіки та функцій налаштування
+ІоТ клієнта.
+      6. Перевірити роботу ІоТ клієнта.
+      7. Завантажити або оновити (при потребі) створений програмний код у
+GitHub репозиторій для лабораторних робіт у гілку репозиторію main.
+  Хід роботи:
+
+
+  Розробити будову програмного забезпечення IoT-клієнта
+
+
+  Основні компоненти IoT-клієнта:
+
+     - Платформа: IoT-клієнт створений на базі ESP32 та змодельований у
+        середовищі Wokwi.
+     - Сенсори:
+
+              1)DHT22: Використовується для вимірювання температури та
+        вологості навколишнього середовища.
+
+              2)PIR Motion Sensor: Виявляє рух у зоні спостереження, що
+        моделює вібраційний сенсор.
+
+     - Протоколи зв’язку:
+
+              1)WiFi: ESP32 підключається до локальної мережі для передачі
+        даних до серверної частини.
+
+              2)HTTP: Для взаємодії з серверною частиною використовується
+        REST API.
+
+     - База даних: Зібрані дані передаються до серверної частини, де вони
+        зберігаються в базі даних ARTGUARD у таблиці sensors.
+     - Сервер: Серверна частина приймає дані від IoT-клієнта, аналізує їх та
+        створює відповідні алерти.
+
+  Архітектура IoT-клієнта:
+
+1. ESP32: Головний контролер, що збирає дані з сенсорів.
+  2. Сенсори: Забезпечують отримання параметрів температури, вологості та
+     руху.
+  3. WiFi-модуль ESP32: Передає дані до серверної частини через HTTP.
+  4. Сервер: Обробляє отримані дані, аналізує їх та створює алерти.
+
+     Призначення IoT-клієнта:
+
+     IoT-клієнт є частиною програмної системи ArtGuard. Його основне
+призначення — забезпечити моніторинг стану об'єктів мистецтва шляхом:
+
+  - Зчитування даних із сенсорів.
+  - Виявлення критичних змін у навколишньому середовищі або руху.
+  - Передачі даних до серверної частини для подальшого аналізу.
+
+     Реалізовані функції:
+
+  - Отримання даних із сенсорів (температура, вологість, рух).
+  - Обробка отриманих даних.
+  - Передача даних до серверної частини.
+
+Посилання на проект IoT: https://wokwi.com/projects/418177376221990913
+1. Розробимо будову програмного забезпечення IoT клієнта:
+
+
+
+
+               Рисунок 1 - Схема будову сенсору безпеки
+  2. UML діаграма прецедентів для ІоТ клієнта:
+
+
+
+
+                 Рисунок 2 - UML діаграма прецедентів для ІоТ
+
+
+  3. Розробимо бізнес логіку (математичну обробку повʼязаних із
+     предметною областю даних) та функції налаштування ІоТ клієнта:
+     Перейдемо до розробленої бізнес-логіки, яка включає налаштування
+IoT-клієнта для системи ArtGuard, а також передачу даних, що відображатимуться
+в додатку (див. Додаток А). Було налаштовано IoT-пристрій, реалізований на
+платформі Wokwi з використанням мови програмування Arduino. По-перше,
+налаштовано всі сенсори (датчик температури та вологості DHT22, датчик руху
+PIR), щоб вони коректно зчитували інформацію. По-друге, реалізовано логіку
+створення виводу трендів сенсорів. І по-третє, реалізовано передачу даних на
+сервер для подальшої обробки та збереження. Код налаштування IoT-клієнта
+надано в Додатку Б (див. Додаток Б).
+
+
+  4. Діаграму діяльності для ІоТ клієнта:
+
+
+
+
+                     Рисунок 3 - Діаграма діяльності для ІоТ
+                                      ДОДАТОК А
+
+
+                              Код бізнес логіки IoT клієнта
+
+
+package controllers
+
+
+import (
+      "log"
+      "my_project/models"
+      "time"
+      "github.com/gofiber/fiber/v2"
+      "gorm.io/gorm"
+)
+// AddSensorData - додавання даних сенсорів
+func AddSensorData(c *fiber.Ctx) error {
+      // Отримуємо з'єднання з базою даних
+      db, ok := c.Locals("db").(*gorm.DB)
+      if !ok || db == nil {
+               log.Println("Database connection not found in context")
+               return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+                     "message": "Database connection error",
+               })
+      }
+
+
+      // Парсимо дані сенсорів
+      var data models.Sensor
+      if err := c.BodyParser(&data); err != nil {
+               log.Println("BodyParser error:", err)
+               return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+                     "message": "Invalid sensor data",
+               })
+      }
+
+
+      // Встановлюємо час створення
+      data.CreatedAt = time.Now()
+
+
+      // Додаємо новий запис у базу даних
+      if err := db.Create(&data).Error; err != nil {
+            log.Println("Error saving sensor data:", err)
+            return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+                  "message": "Error saving sensor data",
+            })
+      }
+
+
+      return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+            "message": "Sensor data added successfully",
+            "data":     data,
+      })
+}
+
+
+// GetSensorStatistics - отримання статистики з сенсорів
+func GetSensorStatistics(c *fiber.Ctx) error {
+      // Отримуємо з'єднання з базою даних
+      db, ok := c.Locals("db").(*gorm.DB)
+      if !ok || db == nil {
+            log.Println("Database connection not found in context")
+            return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+                  "message": "Database connection error",
+            })
+      }
+
+
+      // Отримуємо дані за вказаний день
+      dateParam := c.Query("date") // "YYYY-MM-DD"
+      date, err := time.Parse("2006-01-02", dateParam)
+      if err != nil {
+            log.Println("Invalid date format:", err)
+            return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+                  "message": "Invalid date format. Use YYYY-MM-DD.",
+            })
+      }
+
+
+      var sensorData []models.Sensor
+      if err := db.Where("DATE(created_at) = ?", date).Find(&sensorData).Error; err
+!= nil {
+            log.Println("Error fetching sensor data:", err)
+            return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+                  "message": "Error fetching sensor data",
+          })
+    }
+
+
+    // Ініціалізація статистики
+    var avgTemperature, avgHumidity, vibrationCount float64
+    var totalEntries float64
+
+
+    for _, entry := range sensorData {
+          avgTemperature += entry.Temperature
+          avgHumidity += entry.Humidity
+          if entry.Vibration > 0 {
+                vibrationCount++
+          }
+          totalEntries++
+    }
+
+
+    // Обчислення середніх значень
+    if totalEntries > 0 {
+          avgTemperature /= totalEntries
+          avgHumidity /= totalEntries
+    }
+
+
+    // Формування відповіді
+    stats := fiber.Map{
+          "average_temperature": avgTemperature,
+          "average_humidity":      avgHumidity,
+          "vibration_count":       vibrationCount,
+    }
+
+
+    return c.Status(fiber.StatusOK).JSON(stats)
+}
+                                       ДОДАТОК Б
+
+
+                                  Налаштування IoT клієнта
+
+
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include "DHT.h"
+
+
+#define DHTPIN 4 // Пін, до якого підключено DHT22
+#define DHTTYPE DHT22 // Тип датчика
+#define PIRPIN 15 // Пін, до якого підключено PIR сенсор
+
+
+const char* ssid = "Wokwi-GUEST";
+const char* password = "";
+const char* serverUrl = "https://b792-62-122-67-26.ngrok-free.app/my_project";
+
+
+DHT dht(DHTPIN, DHTTYPE);
+
+
+void setup() {
+    Serial.begin(115200);
+
+
+    pinMode(PIRPIN, INPUT);
+
+
+    dht.begin();
+
+
+    // Підключення до Wi-Fi
+    Serial.print("Connecting to WiFi");
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(1000);
+        Serial.print(".");
+    }
+    Serial.println("\nConnected to WiFi");
+}
+
+
+void loop() {
+    float temperature = dht.readTemperature();
+    float humidity = dht.readHumidity();
+    int motion = digitalRead(PIRPIN);
+
+
+    if (isnan(temperature) || isnan(humidity)) {
+        Serial.println("Failed to read from DHT sensor!");
+        return;
+    }
+
+
+    Serial.print("Temperature: ");
+    Serial.print(temperature);
+    Serial.print(" °C ");
+    Serial.print("Humidity: ");
+    Serial.print(humidity);
+    Serial.print(" %");
+    Serial.print(" Motion: ");
+    Serial.println(motion ? "Detected" : "Not detected");
+
+
+    sendHttpData(temperature, humidity, motion);
+    delay(2000);
+}
+
+
+void sendHttpData(float temperature, float humidity, int motion) {
+    if (WiFi.status() == WL_CONNECTED) {
+        HTTPClient http;
+        http.begin(serverUrl);
+        http.addHeader("Content-Type", "application/json");
+
+
+        String jsonPayload = "{";
+        jsonPayload += "\"temperature\":" + String(temperature) + ",";
+        jsonPayload += "\"humidity\":" + String(humidity) + ",";
+        jsonPayload += "\"motion\":" + String(motion);
+        jsonPayload += "}";
+
+
+        int httpResponseCode = http.POST(jsonPayload);
+
+
+        Serial.print("HTTP Response code: ");
+        Serial.println(httpResponseCode);
+
+
+        if (httpResponseCode > 0) {
+         String response = http.getString();
+            Serial.println("Server response: ");
+            Serial.println(response);
+        } else {
+            Serial.print("Error sending POST: ");
+            Serial.println(httpResponseCode);
+        }
+
+
+        http.end();
+    } else {
+        Serial.println("WiFi Disconnected");
+    }
+}
+
